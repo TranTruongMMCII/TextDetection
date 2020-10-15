@@ -125,6 +125,15 @@ class Ui_MainWindow(object):
 
             try:
                 txt = pageObj.extractText()
+                temp = ""
+                for word in txt.split(' '):
+                   
+                    if '™' in word:
+                        word = word.replace('™','\'')
+                        
+                    temp += word + " "
+                txt = temp        
+           
                 print(''.center(100, '-'))
             except:
                 pass
