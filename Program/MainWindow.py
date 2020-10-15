@@ -26,6 +26,7 @@ import pytesseract as pt
 from PyPDF2 import PdfFileReader
 import pyperclip
 import ntpath
+import subprocess
 
 path_to_pytesseract = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 saving_directory = r"D:\\College\\Artificial Intelligence\\New folder\\Text Detection\\Save"
@@ -110,7 +111,7 @@ class Ui_MainWindow(object):
         root.withdraw()
         global file_path
         file_path = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("jpeg files","*.jpg"), ("png files","*.png"), ("pdf files","*.pdf"),("all files","*.*")))
-
+        subprocess.Popen([file_path], shell=True)
         # self.a = QtWidgets.QApplication([])
         # self.pdf = pikepdf.open(file_path)
         # pikepdf.PdfImage.show(self.pdf)
