@@ -120,7 +120,7 @@ class Ui_MainWindow(object):
         pdf = PdfFileReader(file_path)
         res = ""
         for page_num in range(pdf.numPages):
-            # print("Page: {0}".format(page_num))
+            print("Page: {0}".format(page_num))
             pageObj = pdf.getPage(page_num)
 
             try:
@@ -130,11 +130,15 @@ class Ui_MainWindow(object):
                    
                     if '™' in word:
                         word = word.replace('™','\'')
+                    if 'ﬁ' in word:
+                        word = word.replace('ﬁ','')
+                    # if word[0].isdigit():
+                    #     word = "\n" + word
                         
                     temp += word + " "
                 txt = temp        
            
-                print(''.center(100, '-'))
+                # print(''.center(100, '-'))
             except:
                 pass
             else:
