@@ -24,12 +24,17 @@ except ImportError:
     import Image
 import pytesseract as pt
 from PyPDF2 import PdfFileReader
+import PyPDF2
 import pyperclip
 import ntpath
 import subprocess
+import fitz
+import io
+import cv2
 
 path_to_pytesseract = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 saving_directory = r"D:\\College\\Artificial Intelligence\\New folder\\Text Detection\\Save"
+saving_image = r"D:\\College\\Artificial Intelligence\\New folder\\Text Detection\\Image"
 global res
 
 def path_leaf(path):
@@ -72,6 +77,9 @@ class Ui_MainWindow(object):
         self.btnChuyenDoi = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.btnChuyenDoi.setObjectName("btnChuyenDoi")
         self.horizontalLayout_2.addWidget(self.btnChuyenDoi)
+        self.btnTrichXuatHinhAnh = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.btnTrichXuatHinhAnh.setObjectName("btnTrichXuatHinhAnh")
+        self.horizontalLayout_2.addWidget(self.btnTrichXuatHinhAnh)
         self.btnCopy = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.btnCopy.setObjectName("btnCopy")
         self.horizontalLayout_2.addWidget(self.btnCopy)
@@ -92,13 +100,15 @@ class Ui_MainWindow(object):
         self.btnChuyenDoi.clicked.connect(self.handle_file)
         self.btnCopy.clicked.connect(self.copy_file)
         self.btnLuu.clicked.connect(self.save_file)
+        self.btnTrichXuatHinhAnh.clicked.connect(self.getImageFromPDF)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Chương trình nhận diện văn bản từ hình ảnh"))
         self.label.setText(_translate("MainWindow", "Chương trình nhận diện văn bản từ hình ảnh"))
         self.btnTaiHinhAnh.setText(_translate("MainWindow", "Tải dữ liệu"))
-        self.btnChuyenDoi.setText(_translate("MainWindow", "Chuyển đổi"))
+        self.btnChuyenDoi.setText(_translate("MainWindow", "Trích xuất văn bản"))
+        self.btnTrichXuatHinhAnh.setText(_translate("MainWindow", "Trích xuất hình ảnh"))
         self.btnCopy.setText(_translate("MainWindow", "Copy to clipboard"))
         self.btnLuu.setText(_translate("MainWindow", "Lưu"))
         self.btnThoat.setText(_translate("MainWindow", "Thoát"))
@@ -110,40 +120,51 @@ class Ui_MainWindow(object):
         root = tk.Tk()
         root.withdraw()
         global file_path
-        file_path = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("jpeg files","*.jpg"), ("png files","*.png"), ("pdf files","*.pdf"),("all files","*.*")))
+        file_path = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("pdf files","*.pdf"), ("jpeg files","*.jpg"), ("png files","*.png"), ("all files","*.*")))
         subprocess.Popen([file_path], shell=True)
         # self.a = QtWidgets.QApplication([])
         # self.pdf = pikepdf.open(file_path)
         # pikepdf.PdfImage.show(self.pdf)
     
     def handle_file_pdf(self, file_path):
-        pdf = PdfFileReader(file_path)
-        res = ""
-        for page_num in range(pdf.numPages):
-            print("Page: {0}".format(page_num))
-            pageObj = pdf.getPage(page_num)
+        # pdf = PdfFileReader(file_path)
+        # res = ""
+        # for page_num in range(pdf.numPages):
+        #     print("Page: {0}".format(page_num))
+        #     pageObj = pdf.getPage(page_num)
 
-            try:
-                txt = pageObj.extractText()
-                temp = ""
-                for word in txt.split(' '):
+        #     try:
+        #         txt = pageObj.extractText()
+        #         temp = ""
+        #         for word in txt.split(' '):
                    
-                    if '™' in word:
-                        word = word.replace('™','\'')
-                    if 'ﬁ' in word:
-                        word = word.replace('ﬁ','')
-                    # if word[0].isdigit():
-                    #     word = "\n" + word
+        #             if '™' in word:
+        #                 word = word.replace('™','\'')
+        #             if 'ﬁ' in word:
+        #                 word = word.replace('ﬁ','')
+        #             # if word[0].isdigit():
+        #             #     word = "\n" + word
                         
-                    temp += word + " "
-                txt = temp        
+        #             temp += word + " "
+        #         txt = temp        
            
-                # print(''.center(100, '-'))
-            except:
-                pass
-            else:
-                res += txt
-        pyperclip.copy(res)
+        #         # print(''.center(100, '-'))
+        #     except:
+        #         pass
+        #     else:
+        #         res += txt
+        # pyperclip.copy(res)
+        # return res
+
+        file = fitz.open(file_path)
+
+        res = ""
+
+        for pageNumber, page in enumerate(file.pages(), start=1):
+            res += "Trang " + str(pageNumber) + "\n"
+            text = page.getText()
+            res += text + "\n"
+        
         return res
     
     def handle_file_image(self, file_path):
@@ -152,6 +173,69 @@ class Ui_MainWindow(object):
         res = pt.image_to_string(Image.open(file_path))
         pyperclip.copy(res)
         return res
+
+    def getImageFromPDF(self):
+        # pdf_file = fitz.open(file_path)
+        # for page_index in range(len(pdf_file)):
+        # # get the page itself
+        #     page = pdf_file[page_index]
+        #     image_list = page.getImageList()
+        #     # printing number of images found in this page
+        #     if image_list:
+        #         print(f"[+] Found a total of {len(image_list)} images in page {page_index}")
+        #     else:
+        #         print("[!] No images found on page", page_index)
+        #     for image_index, img in enumerate(page.getImageList(), start=1):
+        #         # get the XREF of the image
+        #         xref = img[0]
+        #         # extract the image bytes
+        #         base_image = pdf_file.extractImage(xref)
+        #         image_bytes = base_image["image"]
+        #         # get the image extension
+        #         image_ext = base_image["ext"]
+        #         # load it to PIL
+        #         image = Image.open(io.BytesIO(image_bytes))
+        #         # save it to local disk
+        #         image.save(open(saving_image + "\\" + f"image{page_index+1}_{image_index}.{image_ext}", "wb"))
+
+
+        doc = fitz.open(file_path)
+        for i in range(len(doc)):
+            for img in doc.getPageImageList(i):
+                xref = img[0]
+                pix = fitz.Pixmap(doc, xref)
+                if pix.n < 5:       # this is GRAY or RGB
+                    pix.writePNG(saving_image + "\\" + f"p%s-%s.png" % (i, xref))
+                else:               # CMYK: convert to RGB first
+                    pix1 = fitz.Pixmap(fitz.csRGB, pix)
+                    pix1.writePNG(saving_image + "\\" + f"p%s-%s.png" % (i, xref))
+                    pix1 = None
+                pix = None
+
+        # input1 = PyPDF2.PdfFileReader(open(file_path, "rb"))
+        # page0 = input1.getPage(0)
+        # xObject = page0['/Resources']['/XObject'].getObject()
+
+        # for obj in xObject:
+        #     if xObject[obj]['/Subtype'] == '/Image':
+        #         size = (xObject[obj]['/Width'], xObject[obj]['/Height'])
+        #         data = xObject[obj].getData()
+        #         if xObject[obj]['/ColorSpace'] == '/DeviceRGB':
+        #             mode = "RGB"
+        #         else:
+        #             mode = "P"
+
+        #         if xObject[obj]['/Filter'] == '/FlateDecode':
+        #             img = Image.frombytes(mode, size, data)
+        #             img.save(saving_image +"\\" + obj[1:] + ".png")
+        #         elif xObject[obj]['/Filter'] == '/DCTDecode':
+        #             img = open(saving_image +"\\" + obj[1:] + ".jpg", "wb")
+        #             img.write(data)
+        #             img.close()
+        #         elif xObject[obj]['/Filter'] == '/JPXDecode':
+        #             img = open(saving_image +"\\" + obj[1:] + ".jp2", "wb")
+        #             img.write(data)
+        #             img.close()
 
     def handle_file(self):
         _translate = QtCore.QCoreApplication.translate  
